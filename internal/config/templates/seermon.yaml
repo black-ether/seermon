@@ -1,0 +1,101 @@
+# seermon.yaml — everything except probe targets (those live in targets.yaml).
+# Every key is optional; omitted keys use the compiled defaults shown here.
+# Validate after editing with:  seermon config check
+#
+# Secrets: prefer password_env over an inline password, and never commit this file
+# once it holds credentials.
+
+intervals:
+  traffic: 1s
+  probe: 2s
+  wifi: 20s
+  lan: 30s
+  geo: 5m
+  # --full only:
+  cpu: 2s
+  memory: 2s
+  gpu: 5s
+  temps: 10s
+  disk: 30m
+
+probe:
+  timeout: 3s          # a timeout counts as a loss sample
+  window: 30           # rolling samples per target
+
+thresholds:
+  latency_warn_ms: 300
+  latency_crit_ms: 800
+  loss_warn_pct: 1
+  loss_crit_pct: 5
+  usage_warn_pct: 60
+  usage_crit_pct: 85
+  cpu_temp_warn: 70
+  cpu_temp_crit: 85
+  gpu_temp_warn: 75
+  gpu_temp_crit: 85
+  traffic_warn_mbps: 1
+  traffic_crit_mbps: 10
+
+geo:
+  enabled: true
+  provider: ipinfo      # https://ipinfo.io/json
+  timeout: 5s
+
+log:
+  enabled: true
+  dir: ""               # empty = platform state dir
+  interval: 30s         # one CSV row per target per this interval
+  retention_days: 30
+  rotate: daily
+
+feed:
+  interval: 2s          # tick line cadence
+  verbose: false        # true = per-target detail every tick
+  color: auto           # auto|always|never — NO_COLOR always respected
+  ascii: false          # true = ASCII-only markers for legacy consoles
+
+# ---- v0.4+ only; ignored entirely without --deeper ----
+deeper:
+  device:
+    host: "<management-address>"
+    password_env: "SEERMON_DEEPER_PW"    # preferred; or password: inline (perm-warned)
+  network:
+    deeper_wifi: "<SSID of the Deeper device>"
+    upstream_wifi: "<direct-internet SSID>"          # optional
+    fallback_wifi: ["<ssid1>", "<ssid2>"]            # priority order
+    router_lan_ip: "<router LAN IP>"
+    device_gateway_ip: "<Deeper LAN IP as seen from PC>"
+    device_upstream_ip: "<device IP on router LAN>"  # optional liveness from fallback
+  deep_probe:
+    interval: 30s
+    timeout: 10s
+    https_targets:
+      - { name: google, url: "https://www.google.com", expect_status: 200 }
+      - { name: reddit, url: "https://www.reddit.com", expect_status: 200 }
+    dns_test_domain: "<well-known domain>"
+    dns_doh_url: "https://dns.google/resolve"
+    dns_doh_bootstrap_ips: ["8.8.8.8", "8.8.4.4"]
+    exit_ip_every_n_cycles: 10
+  failover:
+    auto: false                    # key 1 of 2; key 2 is running as `seermon daemon`
+    tiers_enabled: []              # e.g. [t1] — enable in order, cheapest first
+    consecutive_failures: 3
+    verify_cycles: 2
+    cooldowns: { t1: 5m, t2: 10m, t3: 15m, t4: 20m, t5: 10m }
+    mode_hold: 10m
+    max_actions_per_hour: 12
+    max_reboots_per_day: 2
+    boot_wait: 120s
+    hold_default: 30m
+    t5:
+      path_fail_cycles: 6
+      link_fail_cycles: 6
+      isp_fail_cycles: 10
+      return_after_recovery: true
+      return_probe_after: 10m      # backoff x2, cap 60m
+      return_trial_window: 90s
+  ranking:
+    min_samples: 20
+
+daemon:                          # v0.6+
+  listen: "127.0.0.1:8788"       # loopback only; never 0.0.0.0 in v1

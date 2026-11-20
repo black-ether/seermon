@@ -1,0 +1,16 @@
+# targets.yaml — probe targets. Edit freely; seermon reloads on SIGHUP.
+#
+# warn_ms / crit_ms are optional per-target latency overrides; 0 or absent
+# means use the global thresholds from seermon.yaml. baidu.com is legitimately
+# slow from outside CN, so it carries an override to avoid a permanently amber row.
+#
+# Validate after editing with:  seermon config check
+targets:
+  - { host: bing.com,        port: 443 }
+  - { host: google.com,      port: 443 }
+  - { host: reddit.com,      port: 443 }
+  - { host: github.com,      port: 443 }
+  - { host: huggingface.co,  port: 443 }
+  - { host: baidu.com,       port: 443, warn_ms: 500, crit_ms: 1500 }
+  - { host: cloudflare.com,  port: 443 }
+  - { host: 1.1.1.1,         port: 53 }

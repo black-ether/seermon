@@ -1,0 +1,28 @@
+# Build output
+/seermon
+/seermon.exe
+/dist/
+*.exe
+*.test
+*.out
+coverage.*
+
+# Runtime artifacts (CSV log, state) — seermon writes these to its state dir,
+# but ignore them in case a run is pointed at the repo.
+/probes-*.csv
+/deeper-*.csv
+/actions.csv
+/state.json
+
+# Local user config. May contain a device password; never commit.
+/seermon.yaml
+/targets.yaml
+.env
+*.pem
+
+# Editors / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
